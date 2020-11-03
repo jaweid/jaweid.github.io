@@ -1,4 +1,4 @@
-## WEB前端
+# WEB前端
 
 ### 熟悉微前端应用并落地项目中
 
@@ -9,6 +9,10 @@
 2. 使用parcels在不同框架之间共享UI或组件，使用Utility公共模块实现通用逻辑和部分的数据通信。
 
 3. 实现了不同项目的独立仓库，开发，部署集成。
+
+
+Vue的微前端架构例子：[vue microfrontends](https://github.com/vue-microfrontends)
+
 
 ###  开发公司内部的UI库，NPM私有库
 
