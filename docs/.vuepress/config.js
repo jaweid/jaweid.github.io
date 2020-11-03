@@ -22,7 +22,8 @@ module.exports = {
             '/archite/': [
                 '',
                 'knows',
-                'node'
+                'node',
+                'microfrontend'
             ]
         },
         lastUpdated: '最近更新', // string | boolean
