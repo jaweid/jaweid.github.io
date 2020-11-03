@@ -2,26 +2,22 @@ module.exports = {
     themeConfig: {
         nav: [
             { text: '首页', link: '/' },
-            { text: '技术积累', link: '/articles/' },
             { text: '关于我', link: '/aboutme/' },
             { text: '架构之路', link: '/archite/' },
-            { text: '掘金', link: 'https://juejin.im/' },
-            {
-                text: '语言',
-                items: [
-                    { text: '中文', link: '/language/chinese/' },
-                    { text: 'Japanese', link: '/language/japanese/' }
-                ]
-            }
+            { text: '技术积累', link: '/foundation/' },
+            { text: '掘金', link: 'https://juejin.im/user/4300945220716103/posts' },
+            { text: 'CSDN', link: 'https://blog.csdn.net/liujiawei00' },
         ],
         sidebar: {
-            '/articles/': [
+            '/aboutme/':[
                 '',
-                'js',
+                'frontend',
+                'node',
+                'ops',
+                'backend'
             ],
             '/archite/': [
                 '',
-                'knows',
                 'node',
                 'microfrontend'
             ]
