@@ -21,10 +21,11 @@ module.exports = {
             ],
             '/archite/': [
                 '',
-                'knows'
+                'knows',
+                'node'
             ]
         },
-        lastUpdated: 'Last Updated', // string | boolean
+        lastUpdated: '最近更新', // string | boolean
         smoothScroll: true
     },
 }
