@@ -1,4 +1,5 @@
 module.exports = {
+    base:'/blog/',
     themeConfig: {
         nav: [
             { text: '首页', link: '/' },
