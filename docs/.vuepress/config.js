@@ -20,6 +20,12 @@ module.exports = {
                 '',
                 'node',
                 'microfrontend'
+            ],
+            '/foundation/':[
+                '',
+                'js',
+                'framework',
+                'css'
             ]
         },
         lastUpdated: '最近更新', // string | boolean
