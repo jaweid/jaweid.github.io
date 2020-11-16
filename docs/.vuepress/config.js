@@ -1,4 +1,5 @@
 module.exports = {
+    title:'青年家威',
     themeConfig: {
         nav: [
             { text: '首页', link: '/' },

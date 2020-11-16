@@ -17,3 +17,71 @@ Vue的微前端架构例子：[vue microfrontends](https://github.com/vue-microf
 ###  开发公司内部的UI库，NPM私有库
 
    为什么做这个？怎么做？别人怎么用？
+
+### 前端异常监控
+
+在我们的项目中我将页面异常分为以下几种情况：
+
+- javascript异常（语法错误，运行时错误，跨域脚本）
+- 资源加载异常（img js css）
+- ajax请求异常
+- promise异常
+- vue项目中全局异常捕获
+
+1. javascript异常
+
+```js
+window.onerror捕获javascript异常
+/**
+* 捕获javascript异常,涉及跨域的在script标签增加crossorigin="anonymous"属性
+* @param {String}  message    错误信息
+* @param {String}  source     出错文件
+* @param {Number}  lineno     行号
+* @param {Number}  colno      列号
+* @param {Object}  error      Error对象（对象）
+*/
+window.onerror = function (message, source, lineno, colno, error){
+    console.log('捕获到异常：', { message, source, lineno, colno,error });
+}
+```
+2. 资源加载异常
+
+```js
+// 捕获资源加载异常,img加载异常时会触发img.onerror函数
+window.addEventListener('error',function(e){
+    const err = e.target.src || e.target.href
+    if(err){
+        console.log('捕获到资源加载异常',err)
+    }
+},true)
+```
+3. ajax接口请求异常捕获
+
+status!==200
+
+4. promise异常捕获
+
+有 `catch` 走 `catch` ,没有`catch`需要注册`window.addEventListener('unhandledrejection')`
+
+```js
+window.addEventListener('unhandledrejection', event => {
+    console.log('捕获到未处理的promise异常',event.reson)
+})
+
+```
+
+5. vue项目全局异常捕获
+
+```js
+Vue.config.errorHandler = function (err, vm, info) {
+    // `info` 是 Vue 特定的错误信息，比如错误所在的生命周期钩子
+    // 只在 2.2.0+ 可用
+    let msg = `错误发生在：${info}中，具体信息：${err.stack}`
+    console.log(msg)
+}
+```
+最后，捕获异常之后，将异常上报，然后在管理系统页面列表查看。
+
+### 网页性能优化
+
+![Image](../assets/performance-optimise.png)
