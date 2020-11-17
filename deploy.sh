@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
 
+# 更新代码
+git add .
+git commit -m "update"
+git push origin docs
+
+
 # 确保脚本抛出遇到的错误
 set -e
 
@@ -16,6 +22,6 @@ git init
 git add -A
 git commit -m 'deploy'
 
- git push -f git@github.com:liujiaweigeek/liujiaweigeek.github.io.git master
+git push -f git@github.com:liujiaweigeek/liujiaweigeek.github.io.git master
 
 cd -
