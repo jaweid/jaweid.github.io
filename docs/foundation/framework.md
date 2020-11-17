@@ -503,13 +503,191 @@ new Vue({
 ```
 因为setTimeout是宏任务，他的执行顺序在微任务之后，所以他的代码顺序是无所谓的。即使状态修改的代码位于setTimeout回调的后面，他也会先于setTimeout执行。
 
-## VirtualDOM
+## Vue的模版编译
+
+## Vue的VirtualDOM
 
 [ 最好的、最容易理解的讲VirtualDOM的PPT](https://ppt.baomitu.com/d/2afbd5b9#/)
 
-## Vue的变化侦测原理
+## Vue的变化侦测
 
-[变化侦测原理讲解文章](https://github.com/berwin/Blog/issues/17)
+参考文章：
+
+- [博客文章](https://github.com/berwin/Blog/issues/17)
+
+- [深入浅出Vue.js对象的变化侦测章节](https://www.ituring.com.cn/book/tupubarticle/29448)
+
+### 什么是变化侦测
+
+Vue.js会自动通过状态生成DOM，并将其输出到页面上显示出来，这个过程叫渲染。Vue.js的渲染过程是声明式的，我们通过模板来描述状态与DOM之间的映射关系。
+
+通常，在运行时应用内部的状态会不断发生变化，此时需要不停地重新渲染。这时如何确定状态中发生了什么变化？
+
+变化侦测就是用来解决这个问题的，它分为两种类型：一种是“推”（push），另一种是“拉”（pull）。
+
+Angular和React中的变化侦测都属于“拉”，这就是说当状态发生变化时，它不知道哪个状态变了，只知道状态有可能变了，然后会发送一个信号告诉框架，框架内部收到信号后，会进行一个暴力比对来找出哪些DOM节点需要重新渲染。这在Angular中是脏检查的流程，在React中使用的是虚拟DOM。
+
+而Vue.js的变化侦测属于“推”。当状态发生变化时，Vue.js立刻就知道了，而且在一定程度上知道哪些状态变了。因此，它知道的信息更多，也就可以进行更细粒度的更新。
+
+所谓更细粒度的更新，就是说：假如有一个状态绑定着好多个依赖，每个依赖表示一个具体的DOM节点，那么当这个状态发生变化时，向这个状态的所有依赖发送通知，让它们进行DOM更新操作。相比较而言，“拉”的粒度是最粗的。
+
+但是它也有一定的代价，因为粒度越细，每个状态所绑定的依赖就越多，依赖追踪在内存上的开销就会越大。因此，从Vue.js 2.0开始，它引入了虚拟DOM，将粒度调整为中等粒度，即一个状态所绑定的依赖不再是具体的DOM节点，而是一个组件。这样状态变化后，会通知到组件，组件内部再使用虚拟DOM进行比对。这可以大大降低依赖数量，从而降低依赖追踪所消耗的内存。
+
+Vue.js之所以能随意调整粒度，本质上还要归功于变化侦测。因为“推”类型的变化侦测可以随意调整粒度。
+
+### 如何追踪变化
+
+Object.defineProperty和ES6中的Proxy
+
+### Observer
+
+Observer类会附加到每一个被侦测的object上。一旦被附加上，Observer会将object的所有属性转换为getter/setter的形式。来收集属性的依赖，并且当属性发生变化时会通知这些依赖
+
+```javascript
+import Dep from './Dep';
+
+export class Observer {
+
+    constructor(value) {
+        this.value = value;
+        if (!Array.isArray(value)) {
+            this.walk(value);
+        }
+    }
+    walk(obj) {
+        const keys = Object.keys(obj);
+        for (let i = 0; i < keys.length; i++) {
+            defineReactive(obj, keys[i], obj[keys[i]])
+        }
+    }
+}
+
+function defineReactive(data, key, val) {
+    if (typeof val === 'object') {
+        new Observer(val);
+    }
+    let dep = new Dep();
+    Object.defineProperty(data, key, {
+        enumerable: true,
+        configurable: true,
+        get() {
+            dep.depend();//收集依赖
+            return val
+        },
+        set(newVal) {
+            if (val === newVal) {
+                return
+            }
+            val = newVal;
+            dep.notify();//触发依赖
+        }
+    })
+}
+```
+
+### Dep
+
+它用来收集依赖、删除依赖和向依赖发送消息等。
+
+```javascript
+import { Watcher } from "./Watcher";
+
+export  class Dep {
+    target;
+    constructor() {
+        this.subs = [];
+    }
+
+    addSub(sub) {
+        this.subs.push(sub);
+    }
+
+    removeSub(sub) {
+        remove(this.subs, sub);
+    }
+  
+    depend(){
+        if(this.target instanceof Watcher){
+            this.addSub(this.target);
+        }
+    }
+
+    notify(){
+        const subs=this.subs.slice();
+        for (let i = 0; i < subs.length; i++) {
+            subs[i].update();
+        }
+    }
+}
+
+function remove(arr, item) {
+    if (arr.length) {
+        const index = arr.findIndex(item);
+        if (index > -1) {
+            this.subs.splice(index, 1);
+        }
+    }
+}
+```
+
+### Watcher
+
+`Watcher`是一个中介的角色，数据发生变化时通知它，然后它再通知其他地方。
+
+```js
+import { Dep } from "./Dep";
+
+export class Watcher {
+    constructor(vm, expOrFn, cb) {
+        this.vm = vm;// vm指当前的Vue实例
+        this.getter = parsePath(expOrFn);
+        this.cb = cb;
+        this.value = this.get();// 读取vm.$data中的值，同时会触发属性上的getter
+    }
+
+    get() {
+        // Watcher把自己设置到全局唯一的指定位置，在这里就是Dep.target
+        Dep.target = this;
+        //读取数据，触发这个数据的getter。因此Observer会收集依赖，将这个Watcher收集到Dep，也就是依赖收集。
+        let value = this.getter.call(this.vm, this.vm);
+        //收集结束，清除Dep.target的内容
+        Dep.target = null;
+        //返回读取到的数据值
+        return value
+    }
+
+    update() {
+        //数据改变之后，Dep会依次循环向依赖发通知，这里接到通知之后，先获取之前的旧数据
+        const oldValue = this.value;
+        //然后获取最新的值
+        this.value = this.get();
+        //将新旧值传给回调函数
+        this.cb.call(this.vm, this.value, oldValue);
+    }
+}
+
+const bailRE = /[^\w.$]/
+export function parsePath(path) {
+    if (bailRE.tetx(path)) {
+        return
+    }
+    const segments = path.split('.')
+    return function (obj) {
+        for (let i = 0; i < segments.length; i++) {
+            if (!obj) { return; }
+            obj = obj[segments[i]]
+        }
+        return obj;
+    }
+}
+
+```
+
+问题1:
+
+Dep中的notify会通知所有的依赖，依赖会都更新怎么办？
+
+Vue是异步更新数据变化的，而且采用的是微任务优先，而且源码会判断是否重复，不会添加重复的变化。
 
 ### 总结综述
 
@@ -529,7 +707,7 @@ new Vue({
 
 由于在ES6之前JavaScript并没有提供元编程的能力，所以在对象上新增属性和删除属性都无法被追踪到。
 
-### `Data`、`Observer`、`Dep`和`Watcher`之间的关系
+### Data、Observer、Dep和Watcher之间的关系
 
 `Data`通过`Observer`转换成了getter/setter的形式来追踪变化。
 
@@ -538,6 +716,8 @@ new Vue({
 当数据发生了变化时，会触发setter，从而向`Dep`中的依赖（`Watcher`）发送通知。
 
 `Watcher`接收到通知后，会向外界发送通知，变化通知到外界后可能会触发视图更新，也有可能触发用户的某个回调函数等。
+
+![Image](../assets/watch-observer.png)
 
 ### 如何进行数组变化侦测
 
@@ -551,4 +731,3 @@ vue 中对这个数组问题的解决方案非常的简单粗暴，vue是如何�
 
 第三步：把加工后可以被拦截的原型，赋值到需要被拦截的 `Array` 类型的数据的原型上。
 
-![Image](../assets/watch-observer.png)
