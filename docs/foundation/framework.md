@@ -506,3 +506,49 @@ new Vue({
 ## VirtualDOM
 
 [ 最好的、最容易理解的讲VirtualDOM的PPT](https://ppt.baomitu.com/d/2afbd5b9#/)
+
+## Vue的变化侦测原理
+
+[变化侦测原理讲解文章](https://github.com/berwin/Blog/issues/17)
+
+### 总结综述
+
+变化侦测就是侦测数据的变化。当数据发生变化时，要能侦测到并发出通知。
+
+`Object`可以通过`Object.defineProperty`将属性转换成getter/setter的形式来追踪变化。读取数据时会触发getter，修改数据时会触发setter。
+
+我们需要在getter中收集有哪些依赖使用了数据。当setter被触发时，去通知getter中收集的依赖数据发生了变化。
+
+收集依赖需要为依赖找一个存储依赖的地方，为此我们创建了`Dep`，它用来收集依赖、删除依赖和向依赖发送消息等。
+
+所谓的依赖，其实就是`Watcher`。只有`Watcher`触发的getter才会收集依赖，哪个`Watcher`触发了getter，就把哪个`Watcher`收集到`Dep`中。当数据发生变化时，会循环依赖列表，把所有的`Watcher`都通知一遍。
+
+`Watcher`的原理是先把自己设置到全局唯一的指定位置（例如`window.target`），然后读取数据。因为读取了数据，所以会触发这个数据的getter。接着，在getter中就会从全局唯一的那个位置读取当前正在读取数据的`Watcher`，并把这个`Watcher`收集到`Dep`中去。通过这样的方式，`Watcher`可以主动去订阅任意一个数据的变化。
+
+此外，我们创建了`Observer`类，它的作用是把一个`object`中的所有数据（包括子数据）都转换成响应式的，也就是它会侦测`object`中所有数据（包括子数据）的变化。
+
+由于在ES6之前JavaScript并没有提供元编程的能力，所以在对象上新增属性和删除属性都无法被追踪到。
+
+### `Data`、`Observer`、`Dep`和`Watcher`之间的关系
+
+`Data`通过`Observer`转换成了getter/setter的形式来追踪变化。
+
+当外界通过`Watcher`读取数据时，会触发getter从而将`Watcher`添加到依赖中。
+
+当数据发生了变化时，会触发setter，从而向`Dep`中的依赖（`Watcher`）发送通知。
+
+`Watcher`接收到通知后，会向外界发送通知，变化通知到外界后可能会触发视图更新，也有可能触发用户的某个回调函数等。
+
+### 如何进行数组变化侦测
+
+现在又发现了新的问题，`data` 中不是所有的 `value` 都是对象和基本类型，如果是一个数组怎么办？数组是没有办法通过 `Object.defineProperty` 来侦测到行为的。
+
+vue 中对这个数组问题的解决方案非常的简单粗暴，vue是如何实现的，大体上分三步：
+
+第一步：先把原生 `Array` 的原型方法继承下来。
+
+第二步：对继承后的对象使用 `Object.defineProperty` 做一些拦截操作。
+
+第三步：把加工后可以被拦截的原型，赋值到需要被拦截的 `Array` 类型的数据的原型上。
+
+![Image](../assets/watch-observer.png)
