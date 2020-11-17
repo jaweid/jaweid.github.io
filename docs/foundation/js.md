@@ -217,7 +217,7 @@ setTimeout(_ => {}, 1000)
 
 ### 1. call
 
-语法
+### 语法
 
 ```js
 function.call(thisArg, arg1, arg2, ...)
