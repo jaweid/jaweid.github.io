@@ -30,10 +30,11 @@ Vue的微前端架构例子：[vue microfrontends](https://github.com/vue-microf
 
 1. javascript异常
 
+
 ```js
-window.onerror捕获javascript异常
+// window.onerror捕获javascript异常
 /**
-* 捕获javascript异常,涉及跨域的在script标签增加crossorigin="anonymous"属性
+* 捕获javascript异常
 * @param {String}  message    错误信息
 * @param {String}  source     出错文件
 * @param {Number}  lineno     行号
@@ -44,10 +45,15 @@ window.onerror = function (message, source, lineno, colno, error){
     console.log('捕获到异常：', { message, source, lineno, colno,error });
 }
 ```
+
+客户端：涉及跨域的在`script`标签增加crossorigin="anonymous"[əˈnɑːnɪməs]
+
+服务端：静态资源响应头`Access-Control-Allow-Origin: *`
+
 2. 资源加载异常
 
 ```js
-// 捕获资源加载异常,img加载异常时会触发img.onerror函数
+// 捕获资源加载异常,
 window.addEventListener('error',function(e){
     const err = e.target.src || e.target.href
     if(err){
@@ -55,6 +61,8 @@ window.addEventListener('error',function(e){
     }
 },true)
 ```
+img加载异常时会触发img.onerror函数
+
 3. ajax接口请求异常捕获
 
 status!==200
@@ -80,7 +88,7 @@ Vue.config.errorHandler = function (err, vm, info) {
     console.log(msg)
 }
 ```
-最后，捕获异常之后，将异常上报，然后在管理系统页面列表查看。
+最后，捕获异常之后，将异常上报，然后在管理系统页面列表查看，也可以做实时推送。
 
 ### 网页性能优化
 
