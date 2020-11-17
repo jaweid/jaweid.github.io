@@ -503,3 +503,6 @@ new Vue({
 ```
 因为setTimeout是宏任务，他的执行顺序在微任务之后，所以他的代码顺序是无所谓的。即使状态修改的代码位于setTimeout回调的后面，他也会先于setTimeout执行。
 
+## VirtualDOM
+
+[ 最好的、最容易理解的讲VirtualDOM的PPT](https://ppt.baomitu.com/d/2afbd5b9#/)
