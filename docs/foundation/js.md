@@ -263,3 +263,55 @@ price: 5
 
 ```
 
+## Flow
+
+Flow 使用类型接口查找错误，甚至不需要任何类型声明。 它也能够准确地跟踪变量的类型，就像运行时那样。
+
+Flow 能在 JS 运行前找出常见的 bug，包括：
+
+- 自动类型转换,
+- `null` 引用,
+- 可怕的 `undefined is not a function`.
+
+带有 Flow 类型注解的 JS 代码可以 [简单转化](https://zhenyong.github.io/flowtype/docs/running.html) 为常规的 JS 代码，所以随处运行
+
+```javascript
+// @flow
+function bar(x): string {
+  return x.length;
+}
+bar('Hello, world!');
+```
+
+第一行，我们添加了 `// @flow`，用来告诉 Flow 你得检查我这个文件。**如果不加这个注释， Flow 就认为这个文件还没准备好，先不检查它**
+
+Flow 虽然给出了类型错误提示，但是它不会禁止代码运行。当然，按照最佳实践， 如果有类型错误的话就绝不发布，不过在开发阶段，即便还没完美解决 Flow 的提醒，你还是会经常运行代码的（ 特别是 调试/随机测试 ）。这就是 [Gradual typing](https://en.wikipedia.org/wiki/Gradual_typing) 的好处之一，Flow 的设计如此，让你在开发期间，不受到任何耽误
+
+### 运行Flow代码
+
+因为类型注解不是 Js 规范的一部分，所以我们得移除它，建议使用 [Babel](http://babeljs.io/) 。
+
+安装 Babel 命令行工具：
+
+```shell
+npm install -g babel-cli
+```
+
+安装 Flow 转换器 `babel-plugin-transform-flow-strip-types`，添加一个 `.babelrc` 文件到项目根目录，用来告诉 Babel 要 移除 Flow 注解：
+
+```shell
+cd /path/to/my/project
+
+mkdir -p node_modules && npm install babel-plugin-transform-flow-strip-types
+
+echo '{"plugins": ["transform-flow-strip-types"]}' > .babelrc
+```
+
+使用 `babel` 命令，在后台启动转换器
+
+```shell
+babel --watch=./src --out-dir=./build
+```
+
+这样子babel 会在后台运行，当发现 `src/` 目录下的文件改变时， 就会创建相应的正常的 Js 版本，保存在 `build/` 目录下
+

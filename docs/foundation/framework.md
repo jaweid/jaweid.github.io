@@ -593,7 +593,7 @@ function defineReactive(data, key, val) {
 import { Watcher } from "./Watcher";
 
 export  class Dep {
-    target;
+    target; //target: ?Watcher;
     constructor() {
         this.subs = [];
     }
@@ -683,14 +683,6 @@ export function parsePath(path) {
 
 ```
 
-问题1:
-
-Dep中的notify会通知所有的依赖，依赖会都更新怎么办？
-
-Vue是异步更新数据变化的，而且采用的是微任务优先，而且源码会判断是否重复，不会添加重复的变化。
-
-。。。继续补充关于测试的部分
-
 ### 总结综述
 
 变化侦测就是侦测数据的变化。当数据发生变化时，要能侦测到并发出通知。
@@ -733,5 +725,5 @@ vue 中对这个数组问题的解决方案非常的简单粗暴，vue是如何�
 
 第三步：把加工后可以被拦截的原型，赋值到需要被拦截的 `Array` 类型的数据的原型上。
 
-。。。继续补充关于数组变化的代码
+。。。有待继续补充关于数组的变化侦测实现原理部分
 
