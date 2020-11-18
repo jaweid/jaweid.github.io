@@ -278,6 +278,37 @@ function.call(thisArg, arg1, arg2, ...)
 
 使用参数提供的this值和参数(thisArg, arg1, arg2)，调用该函数(function)的返回值。若该方法没有返回值，则返回 `undefined`。
 
+### 手写call的实现
+
+(币安面试题)
+
+理解了就很简单，其实核心目的很简单，就是把call函数的调用者的this指向，改为call方法传入的第一个参数的this。
+
+那么我们只需要把调用者先卖身给这个参数，然后执行，那么执行的时候this自然就是参数的this，最后我们再把参数上添加的这个调用者清除掉，一别两清，参数恢复原样，调用者也偷到了参数的内部this。
+
+```js
+var test={
+  name:'liujiawei'
+}
+var test1={
+  name:'wuyifan',
+  fn:function(){
+    console.log(this.name);
+  }
+}
+test1.fn.mycall=function(context){
+  let context=context || window; //不传参数时的降级处理
+  context.fn=this;  // this就是test1.fn这个函数
+  let args=[...arguments].splice(1); // 第一个参数是context，后面的参数是其他参数
+  let result=context.fn(args); // 执行context.fn，所以fn里面的this的指向当然就是传入的参数context啦
+  delete context.fn; //记得恢复context哦
+  return result; // 返回的结果为context.fn函数的返回结果
+}
+
+test1.fn.call(test);
+> 'liujiawei'
+```
+
 ### 使用场景
 
 `call() `提供新的 this 值给当前调用的函数/方法。你也可以使用 call 来实现继承：写一个方法，然后让另外一个新的对象来继承它（而不是在新对象中再写一次这个方法）。
@@ -319,36 +350,116 @@ console.log(cheese);
 
 ```
 
-**手写call的实现** (币安面试题) ：
+### 2. apply
 
-理解了就很简单，其实核心目的很简单，就是把call函数的调用者的this指向，改为call方法传入的第一个参数的this。
+apply方法的作用和 call方法类似，区别就是`call()`方法接受的是**参数列表**，而`apply()`方法接受的是**一个参数数组**。
 
-那么我们只需要把调用者先卖身给这个参数，然后执行，那么执行的时候this自然就是参数的this，最后我们再把参数上添加的这个调用者清除掉，一别两清，参数恢复原样，调用者也偷到了参数的内部this。
+### 语法
 
 ```js
-var test={
-  name:'liujiawei'
-}
-var test1={
-  name:'wuyifan',
-  fn:function(){
-    console.log(this.name);
-  }
-}
-test1.fn.mycall=function(context){
-  let context=context || window; //不传参数时的降级处理
-  context.fn=this;  // this就是test1.fn这个函数
-  let args=[...arguments].splice(1); // 第一个参数是context，后面的参数是其他参数
-  let result=context.fn(args); // 执行context.fn，所以fn里面的this的指向当然就是传入的参数context啦
-  delete context.fn; //记得恢复context哦
-  return result; // 返回的结果为context.fn函数的返回结果
-}
-
-test1.fn.call(test);
-> 'liujiawei'
+function.call(thisArg, [arg1, arg2, ...])
 ```
 
-### 2. apply
+### 返回值
+
+和call方法一样，是调用者函数的执行返回的结果
+
+### 手写apply的实现
+
+基本和call一模一样，也很简单，多的只是展开传入的数组，作为传给函数的参数。
+
+```js
+var test = {
+    name: 'liujiawei'
+}
+var test1 = {
+    name: 'wuyifan',
+    fn: function () {
+        console.log(arguments[0]);
+    }
+}
+
+test1.fn.myApply=function(context){
+    context=context||window;
+    context.fn=this;
+    let result;
+    if(arguments[1]){
+       result=context.fn(...arguments[1])
+    }else{
+       result=context.fn();
+    }
+    delete context.fn;
+    return result;
+}
+
+test1.fn.myApply(test,['xianxian','jiawei'])
+>  'xianxian'
+```
+
+使用场景：
+
+- **用 `apply` 将数组各项添加到另一个数组**
+
+  使用concat也可以，但是concat会创建并返回一个新数组。如果我们想追加到现有数组，怎么办？
+
+  ```js
+  var array = ['a', 'b'];
+  var elements = [0, 1, 2];
+  array.push.apply(array,elements);
+  console.log(array);
+  > ['a', 'b', 0, 1, 2]
+  ```
+
+- 使用`apply`和内置函数
+
+  对于一些需要写循环以便历数组各项的需求，我们可以用`apply`完成以避免循环。比如max函数应该传入参数列表，我们可以使用apply直接传入一个数组。比如Math.max(5, 6, 2, 3, 7)。
+
+  ```js
+  var numbers = [5, 6, 2, 3, 7];
+  var max = Math.max.apply(null, numbers); 
+  ```
+
+  但是这样参数个数可能过长，超出某些引擎的限制（比如JS的参数个数上限是65536）。所以我们可以把数组切割。
+
+  ```js
+  function minOfArray(array) {
+      let min = Infinity;
+      let QUANTUM = 5;
+      for (let i = 0, len = array.length; i < array.length; i++) {
+          var subMin = Math.min.apply(array, array.splice(i, Math.min(i + QUANTUM, len)))
+          min = Math.min(subMin, min);
+      }
+      return min;
+  }
+  
+  var min = minOfArray([5, 6, 2, 3, 7, 9, 8]);
+  console.log(min);
+  > 2
+  ```
+
+- 使用apply来链接构造器，能够在构造器中使用一个类数组对象而非参数列表
+
+  目前的new新的函数构造器传入的是参数列表，但是通过apply我们可以传入一个数组。
+
+  //这里调试的时候有点问题，有待继续研究
+
+  ```js
+  Function.prototype.construct=function(aArgs){
+      let newObject=Object.create(this.prototype);
+      this.apply(newObject,aArgs);
+      return newObject;
+  }
+  
+  function MyConstructor (arguments) {
+      console.log(arguments);
+  }
+  var myArray = [4, "Hello world!", false];
+  var myInstance = new MyConstructor(myArray); //Fix MyConstructor.construct is not a function
+  
+  console.log(myInstance.construct);
+  ```
+
+  
 
 ### 3. flat
 
