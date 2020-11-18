@@ -505,17 +505,19 @@ new Vue({
 
 ## Vue的模版编译
 
-参考文章：
+参考资料：
 
 [博客文章](https://github.com/berwin/Blog/issues/18)
 
 ## Vue的VirtualDOM
 
+参考资料：
+
 [ 最好的、最容易理解的讲VirtualDOM的PPT](https://ppt.baomitu.com/d/2afbd5b9#/)
 
 ## Vue的变化侦测
 
-参考文章：
+参考资料：
 
 - [博客文章](https://github.com/berwin/Blog/issues/17)
 

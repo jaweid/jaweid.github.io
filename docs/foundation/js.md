@@ -206,12 +206,63 @@ setTimeout(_ => {}, 1000)
 属于宏任务（macrotask）的事件有以下几种：
 
 * setTimeout
+
 * setInterval
+
 * setImmediate
+
 * MessageChannel
+
 * requestAnimationFrame
+
 * I/O
+
 * UI交互事件
+
+  
+
+OK ，其实JS的事件机制也没那么难，现在我们来看个题目：
+
+```js
+function f2() {
+    setTimeout(() => {
+        console.log(5)
+        Promise.resolve().then(() => {
+            console.log(6)
+        })
+    })
+    new Promise((resolve, reject) => {
+        console.log(1)
+        resolve(1)
+    }).then(() => {
+        console.log(2)
+
+        Promise.resolve().then(() => {
+            console.log(3)
+        })
+
+        setTimeout(() => {
+            console.log(4)
+        })
+
+        Promise.resolve().then(() => {
+            console.log(7)
+        })
+    })
+    Promise.resolve().then(() => {
+        console.log(8)
+    })
+}
+> 1 2 8 3 7 5 6 4
+```
+
+有一点点复杂，但是也不是太复杂。
+
+1. 主线程进入，第一个setTimeOut是宏任务，那你就到下一次事件循环等着吧。然后Promise里面是同步的，打印1。紧接着就来了resolve，那这个new Promise的then去微任务等着吧（微任务1）。接着执行同步代码，到了8的Promise.resolve().then，那你的回调到微任务里等着（微任务2）。后面没代码了，开始执行这一轮的微任务队列。
+2. 按顺序，先读微任务1，进来直接打印2，接着读到了3的 Promise.resolve().then ，那你的回调到微任务里去（微任务3），接着是setTimeout的4，这个是宏任务，得排到第三次事件循环里。下面又是一个7的Promise.resolve().then，那你也去微任务（微任务4）。现在微任务1执行完了，微任务里总共还有三个任务。
+3. 按照微任务的顺序，依次是8，3，7。这一轮的微任务清空了，开始下一轮事件循环。
+4. 5早就在这等着了，打印5。检查是否有微任务，咦？这一轮还真有有一个微任务等着，打印6。微任务清空，开始下一轮事件循环。
+5. 第三轮事件循环里只有一个4，打印4，结束。
 
 ## JS原生方法
 
@@ -225,43 +276,137 @@ function.call(thisArg, arg1, arg2, ...)
 
 ### 返回值 
 
-使用调用者提供的 `this` 值和参数调用该函数的返回值。若该方法没有返回值，则返回 `undefined`。
+使用参数提供的this值和参数(thisArg, arg1, arg2)，调用该函数(function)的返回值。若该方法没有返回值，则返回 `undefined`。
 
 ### 使用场景
 
-`call() `允许为不同的对象分配和调用属于一个对象的函数/方法。
+`call() `提供新的 this 值给当前调用的函数/方法。你也可以使用 call 来实现继承：写一个方法，然后让另外一个新的对象来继承它（而不是在新对象中再写一次这个方法）。
 
-`call() `提供新的 this 值给当前调用的函数/方法。你可以使用 call 来实现继承：写一个方法，然后让另外一个新的对象来继承它（而不是在新对象中再写一次这个方法）。
+一般来说，this值的指向都是被调用的地方，比如被对象调用，被函数调用，或者直接执行也就是被全局环境调用，只有在箭头函数里面比较特殊，是指向上下文。
+
+但是**call函数直接修改this的指向为call方法传入的第一个参数**。
+
+下面的代码可以很简单的说明：
+
+```js
+var test = {
+    name: 'test'
+}
+var test1 = {
+    name: 'test1',
+    fn: function () {
+        console.log(this.name)
+    }
+}
+test1.fn.call(test);
+> 'text'
+```
+
+用call也可以实现继承：
 
 ```js
 function Product(name, price) {
   this.name = name;
   this.price = price;
 }
-
 function Food(name, price) {
   Product.call(this, name, price);
   this.category = 'food';
 }
-
-function Toy(name, price) {
-  Product.call(this, name, price);
-  this.category = 'toy';
-}
-
 var cheese = new Food('feta', 5);
-var fun = new Toy('robot', 40);
-
 console.log(cheese);
-
-//打印结果：
-{
-category: "food"
-name: "feta"
-price: 5
-}
+> {category: "food",name: "feta",price: 5}
 
 ```
+
+**手写call的实现** (币安面试题) ：
+
+理解了就很简单，其实核心目的很简单，就是把call函数的调用者的this指向，改为call方法传入的第一个参数的this。
+
+那么我们只需要把调用者先卖身给这个参数，然后执行，那么执行的时候this自然就是参数的this，最后我们再把参数上添加的这个调用者清除掉，一别两清，参数恢复原样，调用者也偷到了参数的内部this。
+
+```js
+var test={
+  name:'liujiawei'
+}
+var test1={
+  name:'wuyifan',
+  fn:function(){
+    console.log(this.name);
+  }
+}
+test1.fn.mycall=function(context){
+  let context=context || window; //不传参数时的降级处理
+  context.fn=this;  // this就是test1.fn这个函数
+  let args=[...arguments].splice(1); // 第一个参数是context，后面的参数是其他参数
+  let result=context.fn(args); // 执行context.fn，所以fn里面的this的指向当然就是传入的参数context啦
+  delete context.fn; //记得恢复context哦
+  return result; // 返回的结果为context.fn函数的返回结果
+}
+
+test1.fn.call(test);
+> 'liujiawei'
+```
+
+### 2. apply
+
+### 3. flat
+
+手写flat的实现 (币安面试题)：
+
+递归方法
+
+```js
+let array=[[-1], 1, [2], [3, 4, 7, [7]]];
+function flatten(array){
+  let res=[];
+  array.forEach(data=>{
+    if(Array.isArray(array)){
+      res=res.concat(flatten(data)) 
+    }else{
+      res.push(data);
+    }
+  });
+  return res;
+}
+> [-1, 1, 2, 3, 4, 7, 7]
+```
+
+### 4. Instance_of（币安面试题）
+
+一张图就可以充分的解释清楚JS里绕晕了无数人的原型链：
+
+![Image](../assets/prototype.png)
+
+手写instanceOf方法:
+
+```js
+function instance_of(L,R){
+   let proto = L.__proto__; 
+   let prototype = R.prototype; 
+   while(true){
+      if(proto===null){return false;} //找到原型链的终点了，和R的原型函数也不一样，说明两者不同，不是一路人，返回false
+      if(proto===prototype){return true;} //L的原型（或者原型的原型，不管多少级）和R相同，说明两者同出一脉，返回true
+      proto=proto.__proto__; // 往上找L的原型，一直到出结果
+  }
+}
+
+function A() { }
+var a = new A();
+function B(){};
+instance_of(a,A); // true
+instance_of(a,Object); //true
+instance_of(a,B); //false
+```
+
+另外我们可以测试:
+
+```js
+instance_of(Object,Function); // Object.__proto__===Function.prototype
+instance_of(Function,Object); // Function.prototype.__proto__===Object.prototype
+```
+
+至于为什么是这样的，看上面那张图就一目了然了。直接的原因就是上面代码注释的部分。
 
 ## Flow
 
