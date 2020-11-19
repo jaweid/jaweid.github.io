@@ -463,7 +463,36 @@ test1.fn.myApply(test,['xianxian','jiawei'])
 
 ###  3. bind
 
- 
+bind()方法返回一个新的函数，在 `bind()` 被调用时，这个新函数的 `this` 被指定为 `bind()` 的第一个参数，而其余参数将作为新函数的参数，供调用时使用。 
+
+### 手写bind的实现：
+
+```js
+//有待调试
+```
+
+
+
+### 使用场景：
+
+```js
+const module = {
+  x: 42,
+  getX: function() {
+    return this.x;
+  }
+};
+
+const unboundGetX = module.getX;
+console.log(unboundGetX()); // The function gets invoked at the global scope
+< undefined
+
+const boundGetX = unboundGetX.bind(module);
+console.log(boundGetX());
+< 42
+```
+
+
 
 ### 4. flat
 
@@ -669,4 +698,8 @@ babel --watch=./src --out-dir=./build
 
 
 ##  数组去重的n种写法
+
+参考资料：
+
+[文章](https://www.jb51.net/article/159785.htm)
 
