@@ -582,6 +582,8 @@ console.log(car);
 
 JS内构的构造函数比如 Function、Object、Array、Date、RegExp、Number、String、Boolean。
 
+### 关于JS的原型：
+
 每个实例对象都有`__proto__`属性，指向为该实例对象的原型对象。直到Object.prototype，当它作为实例对象的时候， 它的原型对象是null，所以它没有`__proto__`，原型链得以终结。
 
 >  为什么不是Object()终结，因为Object构造函数也是函数，函数也是对象。把Object()当成实例对象的时候，它是通过Function new出来的，所以他的`__proto__`指向Function的原型对象，也就是Function.prototype；把Object()作为原型对象的时候，它自然还有`constructor`属性，指向它的构造函数，也就是Function()。
@@ -593,6 +595,10 @@ JS内构的构造函数比如 Function、Object、Array、Date、RegExp、Number
 一个对象，它可能既是自己父亲的实例对象，又是自己孙子的原型对象。
 
 这种继承关系就是原型链的魅力嘛。
+
+参考资料：
+
+[一张图理解prototype、proto和constructor的三角关系](https://www.cnblogs.com/xiaohuochai/p/5721552.html)
 
 ### 9. promise
 
