@@ -22,6 +22,6 @@ git init
 git add -A
 git commit -m 'deploy'
 
-git push -f git@github.com:liujiaweigeek/liujiaweigeek.github.io.git master
+git push -f git@github.com:jaweid/jaweid.github.io.git master
 
 cd -
