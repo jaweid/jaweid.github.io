@@ -396,7 +396,7 @@ test1.fn.myApply(test,['xianxian','jiawei'])
 >  'xianxian'
 ```
 
-使用场景：
+### 使用场景：
 
 - **用 `apply` 将数组各项添加到另一个数组**
 
@@ -461,9 +461,13 @@ test1.fn.myApply(test,['xianxian','jiawei'])
 
   
 
-### 3. flat
+###  3. bind
 
-手写flat的实现 (币安面试题)：
+ 
+
+### 4. flat
+
+手写flat的实现： (币安面试题)
 
 递归方法
 
@@ -483,7 +487,9 @@ function flatten(array){
 > [-1, 1, 2, 3, 4, 7, 7]
 ```
 
-### 4. Instance_of（币安面试题）
+### 5. Instance_of
+
+（币安面试题）
 
 一张图就可以充分的解释清楚JS里绕晕了无数人的原型链：
 
@@ -518,6 +524,26 @@ instance_of(Function,Object); // Function.prototype.__proto__===Object.prototype
 ```
 
 至于为什么是这样的，看上面那张图就一目了然了。直接的原因就是上面代码注释的部分。
+
+### 6. debounce
+
+### 7. throttle
+
+### 8. new
+
+### 9. promise
+
+### 10. deepClone
+
+### 11. currying(柯里化)
+
+### 12. ajax
+
+### 13.  jsonp
+
+### 14. typeof
+
+### 15. isNaN
 
 ## Flow
 
@@ -570,4 +596,8 @@ babel --watch=./src --out-dir=./build
 ```
 
 这样子babel 会在后台运行，当发现 `src/` 目录下的文件改变时， 就会创建相应的正常的 Js 版本，保存在 `build/` 目录下
+
+
+
+##  数组去重的n种写法
 

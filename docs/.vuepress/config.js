@@ -27,7 +27,8 @@ module.exports = {
                 'js',
                 'framework',
                 'css',
-                'typescript'
+                'typescript',
+                'algorithm'
             ]
         },
         lastUpdated: '最近更新', // string | boolean
