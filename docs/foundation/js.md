@@ -276,7 +276,7 @@ function.call(thisArg, arg1, arg2, ...)
 
 ### 返回值 
 
-使用参数提供的this值和参数(thisArg, arg1, arg2)，调用该函数(function)的返回值。若该方法没有返回值，则返回 `undefined`。
+使用参数提供的this值和参数(thisArg, arg1, arg2)，调用该函数(function)执行的返回值。若该方法没有返回值，则返回 `undefined`。
 
 ### 手写call的实现
 
@@ -556,7 +556,50 @@ instance_of(Function,Object); // Function.prototype.__proto__===Object.prototype
 
 ### 6. debounce
 
+防抖函数，会从上一次被调用后，延迟 wait 毫秒后执行 fn 。名称来源于机械开关和继电器的“去弹跳”（debounce），就是将多个信号合并为一个信号。
+
+>  注意：即使还有0.01秒就到指定时间，如果这时又执行了一次函数，那么之前的定时器就会被取消，需要重新等待delay毫秒。
+
+### 手写debounce的实现
+
+```js
+function debounce(fn,delay){
+  let timer=null;
+  return ()=>{
+    clearTimeout(timer); //每次这个返回的函数被调用，就清除定时器，所以fn一直都不会执行。
+    setTimeOut(()=>{
+       fn.apply(this,auguments); //最后一次的时候，不会再有下一次的清除定时器了，再过dealy毫秒fn会执行一次。
+    },delay)
+  }
+}
+```
+
 ### 7. throttle
+
+节流函数，在 wait 秒内最多执行 fn 一次。名称就是固定函数执行的速率的意思，所以叫节流。
+
+### 手写throttle的实现
+
+```js
+function throttle(fn,delay){
+  let flag=true;
+  return ()=>{
+     if(!flag){return;} // 在delay毫秒内到这里就会return，所以fn一直都不会执行
+     flag=false;
+     setTimeOut(()=>{
+        fn.apply(this,auguments) ; //执行一次，并且改变flag。
+        flag=true;
+     },delay)
+  }
+}
+```
+
+###  debounce和throttle的区别：
+
+其实两个最终的效果是一样的，都是在一定的时间里限制函数只执行一次。
+
+- debounce：强制函数在某段时间内只执行一次。`debounce`适用于诸如input事件，当用户输入时需要响应ajax请求，多次input只响应一次回调方法
+- throttle：强制函数以固定的速率执行。`throttle`适用于resize或者鼠标移动事件或者滚动事件（用debounce也可以）。
 
 ### 8. new
 
@@ -577,7 +620,7 @@ function myNew(context,...args){
    obj.__proto__=context.prototype;
    //修改this指向为新对象，就是最后返回的实例对象，并且传入参数，执行了构造函数里面的代码。
    let result=context.apply(obj,args);
-   //apply的返回值如果有值，返回这个值。如果没有，就返回这个新对象。
+   //执行函数的返回值，如果有，返回这个值；如果没有，就返回这个新对象。
    return result instanceOf Object ? result:obj; 
 }
 
