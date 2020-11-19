@@ -507,7 +507,7 @@ function instance_of(L,R){
       proto=proto.__proto__; // 往上找L的原型，一直到出结果
   }
 }
-
+//test
 function A() { }
 var a = new A();
 function B(){};
@@ -530,6 +530,69 @@ instance_of(Function,Object); // Function.prototype.__proto__===Object.prototype
 ### 7. throttle
 
 ### 8. new
+
+new操作符创建一个自定义的对象类型的实例。
+
+**`new`** 关键字会进行如下的操作：
+
+1. 创建一个空的简单JavaScript对象（即 `{ }`）；
+2. 设置这个空对象的`__proto__`为传入的context的原型对象；
+3. 修改this指向为新创建的对象并传入参数列表，这个新对象就是最后返回的对象，也就是实例对象；
+4. 如果构造函数没有返回值（一般情况下都没有返回值），则返回实例对象，否则返回构造函数的返回值。
+
+手写new的实现：
+
+```js
+function myNew(context,...args){
+   let obj={};
+   obj.__proto__=context.prototype;
+   //修改this指向为新对象，就是最后返回的实例对象，并且传入参数，执行了构造函数里面的代码。
+   let result=context.apply(obj,args);
+   //apply的返回值如果有值，返回这个值。如果没有，就返回这个新对象。
+   return result instanceOf Object ? result:obj; 
+}
+
+function Car(made,model,year){
+  this.made=made;
+  this.model=model;
+  this.year=year;
+}
+let car=myNew( Car,'tesla','model3',2020 );
+console.log(car);
+> Car {mode:'tesla',model:'model3',year:2020}
+```
+
+以上代码实例对象car最后的结构如下:
+
+```js
+{
+  made:'tesla',
+  model:'model3',
+  year:'2020',
+  __proto__:{
+    constructor:Car,//构造函数Car
+    __proto__:{
+      constructor:Object //构造函数Object（是的,Object构造函数本身也是个函数，没毛病啊。）
+    }  
+  }
+}
+```
+
+这里的car是实例对象。实例对象可以有很多个，他们不会互相影响，但是他们的`__proto__`都指向同一个原型对象，所以他们都是由同一个构造函数实例化而来。他们都继承了同一个构造函数的属性和方法。他们是真兄弟。
+
+JS内构的构造函数比如 Function、Object、Array、Date、RegExp、Number、String、Boolean。
+
+每个实例对象都有`__proto__`属性，指向为该实例对象的原型对象。直到Object.prototype，当它作为实例对象的时候， 它的原型对象是null，所以它没有`__proto__`，原型链得以终结。
+
+>  为什么不是Object()终结，因为Object构造函数也是函数，函数也是对象。把Object()当成实例对象的时候，它是通过Function new出来的，所以他的`__proto__`指向Function的原型对象，也就是Function.prototype；把Object()作为原型对象的时候，它自然还有`constructor`属性，指向它的构造函数，也就是Function()。
+
+每个原型对象都有`constructor`属性，指向这个原型对象的构造函数。
+
+构造函数有`prototype`属性，指向该实例对象的原型对象。
+
+一个对象，它可能既是自己父亲的实例对象，又是自己孙子的原型对象。
+
+这种继承关系就是原型链的魅力嘛。
 
 ### 9. promise
 
