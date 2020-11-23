@@ -567,7 +567,7 @@ function debounce(fn,delay){
   let timer=null;
   return ()=>{
     clearTimeout(timer); //每次这个返回的函数被调用，就清除定时器，所以fn一直都不会执行。
-    setTimeOut(()=>{
+    timer=setTimeOut(()=>{
        fn.apply(this,auguments); //最后一次的时候，不会再有下一次的清除定时器了，再过dealy毫秒fn会执行一次。
     },delay)
   }
