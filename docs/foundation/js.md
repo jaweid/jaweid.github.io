@@ -465,10 +465,24 @@ test1.fn.myApply(test,['xianxian','jiawei'])
 
 bind()方法返回一个新的函数，在 `bind()` 被调用时，这个新函数的 `this` 被指定为 `bind()` 的第一个参数，而其余参数将作为新函数的参数，供调用时使用。 
 
+call和apply都是立即执行调用他们的函数。而bind是返回这个函数，待后面调用。
+
 ### 手写bind的实现：
 
 ```js
-//有待调试
+
+Function.prototype.myBind(context){
+  const _this=this;
+  let args=[...arguments].slice(1);
+  return function F(){
+    if(this instanceof F){
+      //这里还不明白
+      return _this.apply(this,args.concat([...arguments]))
+    }else{
+      return _this.apply(context,args.concat([...arguments]))
+    }
+  }
+}
 ```
 
 
@@ -676,15 +690,98 @@ JS内构的构造函数比如 Function、Object、Array、Date、RegExp、Number
 
 ### 10. deepClone
 
+```js
+function deepClone(obj){
+  if(obj===null){return null};
+  if(typeof obj !=='object'){
+    return obj;
+  }
+  if(obj instanceof Date){return new Date(obj)}
+  if(obj instanceof RegExp){return new RegExp(obj)}
+  let newObj=obj.constructor;
+  for(const key in obj){
+     if(obj.hasOwnProperty(key)){
+        newObj[key]=deepClone(obj[key]);
+     }
+  }
+  return newObj;
+}
+```
+
 ### 11. currying(柯里化)
 
 ### 12. ajax
+
+```js
+function ajax(options){
+  let method=options.method||'GET';
+  let data=options.data;
+  let params=options.params;
+  let url=options.url+params?Object.keys(params).map(key=>key+'='params[key]).join('&') :'';
+  let async=options.async===false?false:true;
+  let success=options.success;
+  let headers=options.headers;
+
+  let xhr;
+  if(window.XMLHttpRequest){
+     xhr=new XMLHttpRequest();
+  }else{
+    xhr=new ActiveXObject('Microsoft.XMLHTTP')
+  }
+  xhr.onReadyStatusChanged=function(){
+    if(xhr.readyStatus===4&&xhr.status=200){
+      success&&success(xhr.responseText);
+    }
+  }
+  xhr.open(method,url,async);
+  Object.keys(headers).forEach(key){
+    xhr.setRequestHeaders(key,headers[key])
+  }
+  data?xhr.send(data):xhr.send();
+}
+```
+
+
 
 ### 13.  jsonp
 
 ### 14. typeof
 
+```js
+window.typeOf=function(val){
+ return Object.prototype.toString.call(val).slice(8,-1);
+}
+```
+
+为什么要使用String的slice方法截取字符串的一部分，因为
+
+```js
+tyoeOf (new Number(1));
+console.log(Object.prototype.toString.call(val));
+> '[object Number]'
+```
+
+String 的slice与数组的类似：slice(start,end)
+
+start:包含，如果为负数，-1指的是最后一个字符串的位置，-2指倒数第二个，以此类推
+
+end:不包含，如果为负数，-1指的是最后一个字符串的位置，-2指倒数第二个，以此类推。
+
 ### 15. isNaN
+
+```js
+function isNaN(num){
+  var res=Number(num);
+  res+='';
+  if(res==='NaN'){
+    return true
+  }else{
+    return false;
+  }
+}
+```
+
+
 
 ## Flow
 
@@ -746,7 +843,39 @@ babel --watch=./src --out-dir=./build
 
 [文章](https://www.jb51.net/article/159785.htm)
 
-### JS实现继承的方法
+1. Set
+
+   ```js
+   Array.prototype.unique=function(){
+     return this.from(new Set(array));
+   }
+   ```
+
+2. filter
+
+   ```js
+   Array.prototype.unique-function(){
+     return this.filter((item,index)=>this.indexOf(item)===index)
+   }
+   ```
+
+3. includes
+
+   ```js
+   Array.prototype.unique=function(){
+     let result=[];
+     for(let i=0;i<this.length;i++){
+       if(!result.includes(this[i])){
+         result.push(this[i])
+       }
+     }
+     return result
+   }
+   ```
+
+   
+
+## JS实现继承的几种方法
 
 参考资料：
 
@@ -805,5 +934,79 @@ function B() {
 B.prototype = Object.create(A.prototype); //IE6-8中不兼容Object.create()
 ```
 
+## 什么是闭包和闭包的用途
 
+**什么是闭包**
+
+变量的作用域有两种：全局变量和局部变量；函数内部可以直接读取全局变量；在函数外部无法读取函数内的局部变量。
+能够读取其他函数内部变量的函数，就是闭包：
+
+```js
+function f1(){
+　　　　var n=999;
+　　　　function f2(){
+　　　　　　console.log(n); 
+　　　　}
+　　　　return f2;
+　　}
+　　var result=f1();
+　　result(); // 999
+```
+
+
+上面的代码中，把f2作为返回值，就可以在f1外部读取它的内部变量。
+在本质上，闭包就是将函数内部和函数外部连接起来的一座桥梁。
+
+**闭包的用途：**
+
+1.从外部读取函数内部的变量:
+
+```js
+function f1(){
+　　　　var n=666;
+　　　　function f2(){
+　　　　        console.log(n);  
+　　　　}
+　　　　return f2;
+　　}
+　　var result=f1();
+　　result(); // 666
+```
+
+
+2.将创建的变量的值始终保持在内存中:
+
+```js
+function f1() {
+      var n = 12;
+      function f2() {
+           console.log(++n);
+      };
+      return f2;
+  }
+var result = f1();
+result();//13
+```
+
+
+上面代码中，函数f1中的局部变量n一直保存在内存中，并没有在f1调用后被自动清除。
+
+3.封装对象的私有属性和私有方法。
+
+```js
+function f1(n) {
+  return function () {
+    return n++;
+  };
+}
+var a1 = f1(1);
+a1() // 1
+a1() // 2
+a1() // 3
+var a2 = f1(5);
+a2() // 5
+a2() // 6
+a2() // 7
+//这段代码中，a1 和 a2 是相互独立的，各自返回自己的私有变量。
+```
 
