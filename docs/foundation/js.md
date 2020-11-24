@@ -746,3 +746,64 @@ babel --watch=./src --out-dir=./build
 
 [文章](https://www.jb51.net/article/159785.htm)
 
+### JS实现继承的方法
+
+参考资料：
+
+[ 博客文章](https://blog.csdn.net/ruirui_1996/article/details/78595952)
+
+1. 原型继承
+
+```js
+B.prototype=new A; //私有+公有都会继承
+```
+
+2. call继承
+
+```js
+function B(){
+   A.call(this); //只继承私有
+}
+let b=new B;
+```
+
+3.冒充对象继承
+
+```js
+function B(){
+  let temp=new A;
+  for(var key in temp){  //私有+公有
+    this[key]=temp[key];
+  }
+  temp=null;
+}
+let b=new B;
+```
+
+4.混合模式继承
+
+私有的继承了两遍
+
+```js
+function B(){
+   A.call(this); //继承私有
+}
+B.prototype=new A; //私有+公有都会继承
+let b=new B;
+```
+
+5.寄生组合继承（ES6的继承`extends`采用的方式）
+
+私有的继承私有的
+
+公有的继承共有的
+
+```js
+function B() {
+    A.call(this);
+}
+B.prototype = Object.create(A.prototype); //IE6-8中不兼容Object.create()
+```
+
+
+
