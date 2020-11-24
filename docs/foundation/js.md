@@ -473,10 +473,9 @@ call和apply都是立即执行调用他们的函数。而bind是返回这个函�
 
 Function.prototype.myBind(context){
   const _this=this;
-  let args=[...arguments].slice(1);
+  let args=[...arguments].slice(1); //bind方法去掉第一个参数后面的参数列表
   return function F(){
-    if(this instanceof F){
-      //这里还不明白
+    if(this instanceof F){ //this是bind最后返回的函数被调用的地方
       return _this.apply(this,args.concat([...arguments]))
     }else{
       return _this.apply(context,args.concat([...arguments]))
