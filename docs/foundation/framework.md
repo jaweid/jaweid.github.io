@@ -509,15 +509,23 @@ new Vue({
 
 [博客文章](https://github.com/berwin/Blog/issues/18)
 
+Vue中的模板非常重要，我们可以在模板里面访问变量。
+
+在vue中创建HTML并不只模板这一种办法，我们既可以手写渲染函数来创建HTML，也可以在使用JSX来创建HTML。
+
+模板如何编译为渲染函数呢？
+
 ### 解析器
 
 其实这样一个模板解析器的原理不是特别难，主要就是两部分内容，一部分是 `截取` 字符串，一部分是对截取之后的字符串做 `解析`
 
 每截取一段标签的开头就 `push` 到 `stack`中，解析到标签的结束就 `pop` 出来，当所有的字符串都截没了也就解析完了。
 
+最后将模板解析成AST（抽象语法树）。
+
 ### 优化器
 
-整体逻辑其实就是递归 `AST` 这颗树，然后将 **静态节点** 和 **静态根节点** 找到并打上标记。
+整体逻辑其实就是遍历 `AST` 这颗树，然后使用递归，将 **静态节点** 和 **静态根节点** 找到并打上标记。
 
 ### 代码生成器
 
@@ -533,13 +541,60 @@ new Vue({
 
 如果 `children` 中还有 `children` 则递归去拼。
 
-最后拼出一个完整的 `render` 函数代码。
+最后拼出一个完整的渲染函数代码。
+
+这个渲染函数执行之后，会得到一份vnode用于虚拟dom渲染。
 
 ## Vue的VirtualDOM
 
 参考资料：
 
 [ 最好的、最容易理解的讲VirtualDOM的PPT](https://ppt.baomitu.com/d/2afbd5b9#/)
+
+### 虚拟DOM
+
+虚拟DOM是将状态映射为视图的众多解决办法中的一个（Angular的脏检查、Vue中的变化侦测细粒度绑定）。
+
+ Vue.js中通过模板来描述状态和视图之间的映射关系，所以它会先将模板编译为渲染函数，然后执行渲染函数生成虚拟节点vnode，最后使用虚拟节点更新视图。
+
+因此，虚拟DOM在vue中做的就是提供虚拟节点vnode以及通过对比新旧vnode来找出需要更新的部分来提升性能。根据比对结果进行DOM操作来更新视图。
+
+### Vnode
+
+- 注释节点（isComment为true）
+- 文本节点（只有text属性）
+- 元素节点（tag, data,children,context）
+- 组件节点（componentOptions，componentInstance）
+- 函数式组件（functionalOptions，functionalContext）
+- 克隆节点（isCloned为true）
+
+VNode是一个类，可以生成类型不同的实例，这些vnode实例代表不同的真实dom元素。
+
+由于Vue对组件使用了虚拟DOM来更新视图，当组件里的状态发生变化时，整个组件都要重新渲染，但是并不是所有的DOM都需要更新，所以将vnode缓存并在新的vnode生成之后通过和旧的vnode对比，就可以找到需要更新的vnode，也就可以只对需要更新的部分进行DOM操作来提升性能。
+
+### Patch
+
+虚拟DOM最核心的部分是Patch，它可以将Vnode渲染成真实的DOM 。
+
+patch也可以叫做Patching算法，通过它渲染真实DOM时，并不是暴力的覆盖原DOM，而是通过新旧 vnode对比找出哪些需要更新的节点。patch名字本身就有补丁、修补等意思，其实际作用是在现有DOM上更改来实现试图更新。
+
+之所以这么做，是因为DOM操作的速度远不如JS的运算速度。因此，把大量的DOM操作搬运到JS中，使用patch算法找出需要更新的节点，最大限度的减少DOM的操作，从而提升性能。		 				 	
+
+### 创建节点
+
+![Image](../assets/createNode.png)
+
+
+
+### 更新节点
+
+![Image](../assets/updateNode.png)
+
+
+
+### 子节点的对比
+
+新增、移动、更新、删除
 
 ## Vue的变化侦测
 
