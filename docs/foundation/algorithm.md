@@ -195,6 +195,7 @@ function twoSum(sums,target){
 原因：342 + 465 = 807
 
 ```js
+//未完全理解，待调试
 var addTwoNumbers = function(l1, l2) {
     let dummyNode=new ListNode(0);
     let curr=dummyNode;
