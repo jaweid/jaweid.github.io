@@ -132,7 +132,6 @@ function threeSum(nums){
   let result=[];
   for(let i=0;i<nums.length;i++){
     if(nums[i]>0){break;}
-    if(nums[i]===nums[i-1]) continue;
     let second=i+1;
     let last=sums.length-1;
     while(second<last){
@@ -152,6 +151,71 @@ function threeSum(nums){
   }
   return result;
 }
+```
+
+## 两数之和
+
+给定一个已按照升序排列 的有序数组，找到两个数使得它们相加之和等于目标数。
+
+函数应该返回这两个下标值 index1 和 index2，其中 index1 必须小于 index2。
+
+**说明:**
+
+- 返回的下标值（index1 和 index2）不是从零开始的。
+
+```js
+function twoSum(sums,target){
+    let map=new Map();
+    for(let i=0;i<nums.length;i++){
+      let k=target-nums[i];
+      if(map.has(k)){
+         if(map.get(k)<i){    //判断index1是不是小于index2
+           return [map.get(k)+1,i+1] //+1因为下标不从零开始
+         }
+      }else{
+        map.set(k,i)
+      }
+    }
+  return [];
+}
+```
+
+## 两数相加
+
+给出两个 非空 的链表用来表示两个非负的整数。其中，它们各自的位数是按照 逆序 的方式存储的，并且它们的每个节点只能存储 一位 数字。
+
+如果，我们将这两个数相加起来，则会返回一个新的链表来表示它们的和。
+
+您可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+示例：
+
+输入：(2 -> 4 -> 3) + (5 -> 6 -> 4)
+输出：7 -> 0 -> 8
+原因：342 + 465 = 807
+
+```js
+var addTwoNumbers = function(l1, l2) {
+    let dummyNode=new ListNode(0);
+    let curr=dummyNode;
+    let sum=0;
+    let carry=0;
+    while(l1!==null||l2!==null){
+      let x=l1&&l1.val?l1.val:0;
+      let y=l2&&l2.val?l2.val:0;
+      sum=carry+x+y;
+      carry=parseInt(sum/10);
+      curr.next=new ListNode(sum%10);
+      curr=curr.next;
+      if(l1!==null) l1=l1.next;
+      if(l2!==null) l2=l2.next;
+    } 
+    if(carry>0){
+        curr.next=new ListNode(carry)
+    }
+
+    return dummyNode.next;
+};
 ```
 
 
