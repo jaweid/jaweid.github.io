@@ -813,3 +813,9 @@ vue 中对这个数组问题的解决方案非常的简单粗暴，vue是如何�
 
 。。。有待继续补充关于数组的变化侦测实现原理部分
 
+## Vue中的生命周期
+
+<img src="../assets/lifecycle1.png" alt="Image" style="zoom:50%;" />
+
+<img src="../assets/lifecycle2.png" style="zoom:60%;" />
+
