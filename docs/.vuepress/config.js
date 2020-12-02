@@ -15,8 +15,7 @@ module.exports = {
                 'frontend',
                 'node',
                 'ops',
-                'backend',
-                'cv'
+                'backend'
             ],
             '/archite/': [
                 '',
