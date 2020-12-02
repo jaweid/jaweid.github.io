@@ -1017,11 +1017,7 @@ for...in 循环主要是为了遍历对象而生，不适用于遍历数组
 
 for...of 循环可以用来遍历数组、类数组对象，字符串、Set、Map 以及 Generator 对象
 
-### 服务端渲染拼接模板和客户端渲染有什么不同？（喜马拉雅）
-
-
-
-### 浏览器渲染机制是怎样的，什么是重排（回流），重绘？（喜马拉雅）
+## 浏览器渲染机制是怎样的，什么是重排（回流），重绘
 
 1.解析HTML，构建DOM树
 
@@ -1074,34 +1070,6 @@ Promise实例其实就是一串执行链（回调函数的List），不同回调
 
 在回到函数内，通过 resolve(obj) 与 reject(obj) 把执行权指向下一个链条中的回调。并且下一次回调的入参。
 
-### 实现一下promise构造函数，还有then，finally方法（百度，喜马拉雅）
-
-### 深拷贝和浅拷贝是怎样的，实现一个深拷贝的方法（多家公司问到）
-
-值引用和对象引用。浅拷贝是复制一个对象的引用地址，而不是对象本身的值，修改对象的时候会导致原始对象的修改，出现不必要的问题。
-
-实现:
-
-```js
-function deepClone(obj){
-  if(obj===null){return obj}
-  if(typeof obj !=='object'){
-    return obj
-  }
-  if(obj instanceof Date){return new Date(obj)}
-  if(obj instanceof RegExp){return new RegExp(obj)}
-  let newObj=obj.constructor;
-  for(let key in obj){
-    if(obj.hasOwnPerproty(key)){
-     newObj[key]=deepClone(obj[key])
-    }
-  }
-  return newObj;
-}
-```
-
-
-
 ### 常用的状态码有哪些，都代表什么（百度，喜马拉雅）
 
 1 请求已接收，继续处理
@@ -1132,7 +1100,13 @@ i ++ 是先赋值后加；++ i 是先加后赋值
 
 ##  JSON实现深拷贝有什么缺点
 
-1. 如果obj里面有时间对象，则JSON.stringify后再JSON.parse的结果，时间将只是字符串的形式，而不是对象的形式
+喜马拉雅面试题
+
+```js
+JSON.parse(JSON.stringify(obj))
+```
+
+1. 如果obj里面有时间对象，序列化之后的结果，时间将只是字符串的形式，而不是对象的形式
 2. 如果obj里有RegExp（正则）、Error对象，则序列化的结果将只是空对象
 3. 如果obj里有函数，则序列化的结果会把函数丢失
 4. 如果obj里有NaN，Infinity和-Infinity，则序列化的结果会变成null
@@ -1140,6 +1114,8 @@ i ++ 是先赋值后加；++ i 是先加后赋值
 6. 如果对象中存在循环引用的情况也无法正确实现深拷贝
 
 ## setTimeout和setInterval都用来实现轮询的区别
+
+喜马拉雅面试题
 
 如果使用一个轮询，就适合使用setTimeout来模拟。
 
@@ -1178,6 +1154,8 @@ timer = setInterval(loop,2000);
 因为去后台请求数据需要时间，而如果这个响应时间大于我们定时器的时间间隔，`setInterval`就会产生多次发送请求的bug。但是，我们可以利用`setTimeout`只执行一次的语法特性，来将它安排在异步回调中。这样就不会产生这种bug了。
 
 ## 事件委托
+
+喜马拉雅、科大讯飞面试题
 
 如果我们有许多以类似方式处理的元素，那么就不必为每个元素分配一个处理程序 —— 而是将单个处理程序放在它们的共同祖先上。
 
