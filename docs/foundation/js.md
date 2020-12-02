@@ -1,3 +1,5 @@
+
+
 # Javascript
 
 ##  Object.assign()和深浅拷贝
@@ -1127,4 +1129,73 @@ function deepClone(obj){
 ##  i++和++i的区别
 
 i ++ 是先赋值后加；++ i 是先加后赋值
+
+##  JSON实现深拷贝有什么缺点
+
+1. 如果obj里面有时间对象，则JSON.stringify后再JSON.parse的结果，时间将只是字符串的形式，而不是对象的形式
+2. 如果obj里有RegExp（正则）、Error对象，则序列化的结果将只是空对象
+3. 如果obj里有函数，则序列化的结果会把函数丢失
+4. 如果obj里有NaN，Infinity和-Infinity，则序列化的结果会变成null
+5. 只能序列化对象的可枚举的自有属性。例如，如果obj中的对象有的是由构造函数生成的，则序列化后会丢失对象的constructor属性
+6. 如果对象中存在循环引用的情况也无法正确实现深拷贝
+
+## setTimeout和setInterval都用来实现轮询的区别
+
+如果使用一个轮询，就适合使用setTimeout来模拟。
+
+```js
+var timer;
+var loop = ()=>{
+  $.ajax(action).done((res)=>{
+    //成功，调用回调
+    if(res.code ==='success'){
+      clearTimeout(timer);
+      timer = null;
+    }else {
+      timer = setTimeout(loop,2000);
+    }
+  })
+}
+timer = setTimeout(loop,2000);
+```
+
+使用setInterval是这样的：
+
+```js
+var timer;
+var loop = ()=>{
+  $.ajax(action).done((res)=>{
+    //成功，调用回调
+    if(res.code ==='success'){
+      clearInterval(timer);
+      timer = null;
+    }
+  })
+}
+timer = setInterval(loop,2000);
+```
+
+因为去后台请求数据需要时间，而如果这个响应时间大于我们定时器的时间间隔，`setInterval`就会产生多次发送请求的bug。但是，我们可以利用`setTimeout`只执行一次的语法特性，来将它安排在异步回调中。这样就不会产生这种bug了。
+
+## 事件委托
+
+如果我们有许多以类似方式处理的元素，那么就不必为每个元素分配一个处理程序 —— 而是将单个处理程序放在它们的共同祖先上。
+
+在处理程序中，我们获取 `event.target` 以查看事件实际发生的位置并进行处理。
+
+在 **document.addEventListener** 的时候我们可以**设置事件模型**：事件冒泡、事件捕获，一般来说都是用事件冒泡的模型；
+
+![Image](../assets/event.png)
+
+上图所示，事件模型是指分为三个阶段：
+
+捕获阶段：在事件冒泡的模型中，捕获阶段不会响应任何事件； 目标阶段：目标阶段就是指事件响应到触发事件的最底层元素上； 冒泡阶段：冒泡阶段就是事件的触发响应会从最底层目标一层层地向外到最外层（根节点），事件代理即是利用事件冒泡的机制把里层所需要响应的事件绑定到外层。
+
+优点：
+
+事件委托可以减少大量的内存消耗，节约效率。
+
+缺点：
+
+ focus、blur 之类的事件本身没有事件冒泡机制，所以无法委托； mousemove、mouseout这样的事件，虽然有事件冒泡，但是只能不断通过位置去计算定位，对性能消耗高，不适合事件委托。
 
