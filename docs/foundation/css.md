@@ -83,7 +83,7 @@ animation: name duration timing-function delay iteration-count direction;
 
 1. transform
 
-2. transform-origin
+2. transform-origin：更改一个元素的基点，默认值为x,y方向的中心点。
 
    用法:
 
@@ -91,16 +91,16 @@ animation: name duration timing-function delay iteration-count direction;
    transform-origin: x-axis y-axis z-axis;
    ```
 
-​      参数值定义视图被置于 X/Y/Z轴的何处。可能的值：left、center、right、length、%。
+​      参数值定义视图被置于 X/Y/Z轴的何处。可能的值：left、center、right、top、bottom、length、%。
 
-3. transform-style：嵌套元素都有3D转换的时候，子元素的 3D 转换是否生效/保留
+3. transform-style：设置元素的子元素是位于 3D 空间中还是平面中。如果选择平面，元素的子元素将不会有 3D 的遮挡关系。
 
-- flat：不保留，默认值
-- preserve-3d：保留
+- flat：设置元素的子元素位于该元素的平面中
+- preserve-3d：指示元素的子元素应位于 3D 空间中
 
 4. perspective：透视效果。值为number/none，默认为none
 
-5. perspective-origin：默认情况下，透视消失点位于元素的中心，但是可以通过设置 [`perspective-origin`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/perspective-origin) 属性来改变其位置。
+5. perspective-origin：透视基点的位置。默认情况下，透视消失点位于元素的中心，但是可以通过设置 [`perspective-origin`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/perspective-origin) 属性来改变其位置。
 
    用法:
 
@@ -108,9 +108,13 @@ animation: name duration timing-function delay iteration-count direction;
    perspective-origin: x-axis y-axis;
    ```
 
-   参数可能的值：left、center、right、length、%。默认值:50%,50%
+   x轴：left、center、right
 
-6. backface-visibility ：定义当元素背向屏幕时是否可见（例如Y轴旋转180度，我们看到的就是元素的背部），如果在旋转元素不希望看到其背面时，该属性很有用。
+   y轴：top、 center、bottom
+
+   或者length、%。默认值:50%,50%
+
+6. backface-visibility ：当元素背面朝向观察者时是否可见。元素的背面是其正面的镜像。虽然在 2D 中不可见，但是当变换导致元素在 3D 空间中旋转时，背面可以变得可见。（此属性对 2D 变换没有影响，它没有透视）
    - visible：可见
    - hidden：隐藏
 
