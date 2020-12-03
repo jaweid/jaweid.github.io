@@ -98,9 +98,9 @@ animation: name duration timing-function delay iteration-count direction;
 - flat：不保留，默认值
 - preserve-3d：保留
 
-4. perspective：当为元素定义 perspective 属性时，其子元素会获得透视效果。值为number/none，默认为none
+4. perspective：透视效果。值为number/none，默认为none
 
-5. perspective-origin：定义 3D 元素所基于的 X 轴和 Y 轴。默认值为50%,50%。
+5. perspective-origin：默认情况下，透视消失点位于元素的中心，但是可以通过设置 [`perspective-origin`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/perspective-origin) 属性来改变其位置。
 
    用法:
 
@@ -108,7 +108,7 @@ animation: name duration timing-function delay iteration-count direction;
    perspective-origin: x-axis y-axis;
    ```
 
-   参数可能的值：left、center、right、length、%。
+   参数可能的值：left、center、right、length、%。默认值:50%,50%
 
 6. backface-visibility ：定义当元素背向屏幕时是否可见（例如Y轴旋转180度，我们看到的就是元素的背部），如果在旋转元素不希望看到其背面时，该属性很有用。
    - visible：可见
@@ -180,7 +180,7 @@ transform: translate(50px,100px);
 
 用法：
 
-```js
+```css
 transition: property duration timing-function delay;
 ```
 
