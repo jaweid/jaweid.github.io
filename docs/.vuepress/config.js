@@ -29,7 +29,8 @@ module.exports = {
                 'css',
                 'typescript',
                 'algorithm',
-                'http'
+                'http',
+                'html'
             ]
         },
         lastUpdated: '最近更新', // string | boolean
