@@ -1270,3 +1270,121 @@ SessionStorage 和 LocalStorage 使用方法基本一致，唯一不同的是，
 
 在大部分应用场景下，LocalStorage 已经能完全替代 Cookie，只有类似于广告这种场景，由于 Cookie 可以被服务端设置，Cookie 仍存在不可替代的价值。
 
+## 跨域的解决办法
+
+浏览器的同源策略：同源策略限制了从同一个源加载的文档或脚本如何与来自另一个源的资源进行交互。这是一个用于隔离潜在恶意文件的重要安全机制。
+
+同源策略下请求跨域接口的解决办法：
+
+1. JSONP
+
+HTML标签的script、img、iframe这样的获取资源的元素没有跨域限制。
+
+```js
+  const script = document.createElement('script')
+    // 接口返回的数据获取
+    window.jsonpCb = (res) => {
+      document.body.removeChild(script)
+      delete window.jsonpCb
+      resolve(res)
+    }
+   script.src = `${url}?&cb=jsonpCb`
+   document.body.appendChild(script)
+```
+
+
+
+2. 空iframe加form
+
+JSONP只能发GET请求，因为script加载资源就是GET。如何发送POST请求呢？
+
+```js
+ const iframe = document.createElement('iframe')
+  iframe.name = 'iframePost'
+  iframe.style.display = 'none'
+  document.body.appendChild(iframe)
+  const form = document.createElement('form')
+  const node = document.createElement('input')
+  form.action = url
+  form.target = iframe.name
+  form.method = 'post'
+  for (let name in data) {
+    node.name = name
+    node.value = data[name].toString()
+    form.appendChild(node.cloneNode())
+  }
+  form.style.display = 'none'
+  document.body.appendChild(form)
+  form.submit()
+  document.body.removeChild(form)
+```
+
+
+
+3. CORS
+
+CORS是一个W3C标准，全称是"跨域资源共享"。这是处理跨域问题的标准做法。CORS有两种请求，简单请求和非简单请求。
+
+对于简单请求，后端设置：
+
+```js
+ ctx.set('Access-Control-Allow-Origin', '*')
+```
+
+非简单请求：
+
+非简单请求会发出一次预检测请求，返回码是204，预检测通过才会真正发出请求，这才返回200。
+
+如果需要 http请求带上cookie，需要前后端都设置Credentials，且后端设置指定的origin。
+
+非简单请求会增加一次preflight请求。所以除了设置origin，还需要设置Access-Control-Request-Method和Access-Control-Request-Headers。
+
+```js
+  ctx.set('Access-Control-Allow-Origin',  'http://localhost:9099')
+  ctx.set('Access-Control-Allow-Credentials', true)
+  ctx.set('Access-Control-Request-Method', 'PUT,POST,GET,DELETE,OPTIONS')
+  ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, t')
+```
+
+4. 代理
+
+   使用服务端代理发送请求。请求的时候还是用前端的域名，然后代理帮我们把这个请求转发到真正的后端域名上。
+
+   比如nginx代理：
+
+   ```js
+   server{
+       // 监听9099端口
+       listen 9099;
+       // 域名是localhost
+       server_name localhost;
+       // 凡是localhost:9099/api这个样子的，都转发到真正的服务端地址    http://localhost:9871 
+       location ^~ /api {
+           proxy_pass http://localhost:9871;
+       }    
+   }
+   ```
+
+
+
+## this的指向问题
+
+普通函数（非箭头函数）被调用时（即运行时）才会确定该函数内this的指向。因为在函数中this与arguments是两个特殊的变量，在函数被调用时才会取得它们，而且搜索这两个变量时只会在活动对象范围里面去搜。
+
+箭头函数中的this在**函数定义的时候**就已经确定，它this指向的是它的外层作用域上下文this的指向。
+
+1. 函数直接执行: test()
+
+   指向全局对象，浏览器为window，严格模式下为undefined。
+
+2. 作为对象属性调用: xxx.test()
+
+    谁调用这个函数的，this就指向谁。
+
+3. call、apply、bind
+
+   指向传的第一个参数 。
+
+4. new
+
+   this指向实例函数，也就是被new出来的新对象。
